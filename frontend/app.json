@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Attendance App",
+    "slug": "attendance-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#2563EB"
+    },
+    "android": {
+      "package": "com.attendanceapp.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#2563EB"
+      }
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.attendanceapp.mobile"
+    },
+    "plugins": [
+      "expo-status-bar"
+    ]
+  }
+}
