@@ -1,10 +1,21 @@
 const bcrypt = require('bcryptjs');
 const Volunteer = require('../models/Volunteer');
+const VolunteerAttendance = require('../models/VolunteerAttendance');
 
-// GET /api/volunteers
+// GET /api/volunteers?activeOnly=&search=
 async function getVolunteers(req, res, next) {
   try {
-    const volunteers = await Volunteer.find().sort({ createdAt: -1 });
+    const { activeOnly, search } = req.query;
+    const filter = {};
+
+    if (activeOnly === 'true') filter.isActive = true;
+
+    if (search && search.trim()) {
+      const regex = new RegExp(search.trim(), 'i');
+      filter.$or = [{ name: regex }, { volunteerId: regex }, { email: regex }];
+    }
+
+    const volunteers = await Volunteer.find(filter).sort({ name: 1 });
     res.json(volunteers);
   } catch (err) {
     next(err);
@@ -77,6 +88,8 @@ async function deleteVolunteer(req, res, next) {
   try {
     const volunteer = await Volunteer.findByIdAndDelete(req.params.id);
     if (!volunteer) return res.status(404).json({ message: 'Volunteer not found.' });
+    // Clean up attendance history tied to this volunteer
+    await VolunteerAttendance.deleteMany({ volunteerId: volunteer.volunteerId });
     res.json({ message: 'Volunteer deleted successfully.' });
   } catch (err) {
     next(err);

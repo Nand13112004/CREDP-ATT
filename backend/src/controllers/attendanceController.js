@@ -1,5 +1,7 @@
 const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
+const VolunteerAttendance = require('../models/VolunteerAttendance');
+const Volunteer = require('../models/Volunteer');
 const { isValidDateString, todayIST } = require('../utils/date');
 
 // POST /api/attendance
@@ -97,4 +99,81 @@ async function getStudentAttendance(req, res, next) {
   }
 }
 
-module.exports = { markAttendance, getAttendanceByDate, updateAttendance, getStudentAttendance };
+// POST /api/attendance/volunteers (admin only)
+// Body: { date, records: [{ volunteerId, status }] }
+async function markVolunteerAttendance(req, res, next) {
+  try {
+    const { date, records } = req.body;
+    const attendanceDate = date && isValidDateString(date) ? date : todayIST();
+
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.status(400).json({ message: 'records must be a non-empty array of { volunteerId, status }.' });
+    }
+
+    const markedBy = 'ADMIN';
+
+    const results = [];
+    for (const rec of records) {
+      if (!rec.volunteerId || !['Present', 'Absent'].includes(rec.status)) continue;
+
+      const volunteerId = rec.volunteerId.trim().toUpperCase();
+      const doc = await VolunteerAttendance.findOneAndUpdate(
+        { volunteerId, date: attendanceDate },
+        { volunteerId, date: attendanceDate, status: rec.status, markedBy },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      results.push(doc);
+    }
+
+    res.status(200).json({ message: 'Volunteer attendance saved successfully.', date: attendanceDate, records: results });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/attendance/volunteers?date=YYYY-MM-DD
+async function getVolunteerAttendanceByDate(req, res, next) {
+  try {
+    const date = req.query.date && isValidDateString(req.query.date) ? req.query.date : todayIST();
+    const records = await VolunteerAttendance.find({ date });
+    res.json({ date, records });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /api/attendance/volunteer/:volunteerId
+async function getVolunteerAttendance(req, res, next) {
+  try {
+    const volunteerId = req.params.volunteerId.trim().toUpperCase();
+    const volunteer = await Volunteer.findOne({ volunteerId });
+    if (!volunteer) return res.status(404).json({ message: 'Volunteer not found.' });
+
+    const records = await VolunteerAttendance.find({ volunteerId }).sort({ date: -1 });
+    const totalDays = records.length;
+    const presentDays = records.filter((r) => r.status === 'Present').length;
+    const absentDays = totalDays - presentDays;
+    const percentage = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
+
+    res.json({
+      volunteer: { volunteerId: volunteer.volunteerId, name: volunteer.name, email: volunteer.email },
+      totalDays,
+      presentDays,
+      absentDays,
+      percentage,
+      history: records.map((r) => ({ date: r.date, status: r.status })),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  markAttendance,
+  getAttendanceByDate,
+  updateAttendance,
+  getStudentAttendance,
+  markVolunteerAttendance,
+  getVolunteerAttendanceByDate,
+  getVolunteerAttendance,
+};

@@ -86,6 +86,9 @@ export default function DashboardScreen({ navigation }) {
       <Text style={styles.sectionTitle}>Quick Actions</Text>
       <View style={styles.actions}>
         <Button title="📋 Mark Attendance" onPress={() => navigation.navigate('MarkAttendance')} />
+        {isAdmin && (
+          <Button title="📋 Mark Volunteer Attendance" variant="outline" onPress={() => navigation.navigate('MarkVolunteerAttendance')} style={{ marginTop: 10 }} />
+        )}
         <Button title="🧑‍🎓 Students" variant="outline" onPress={() => navigation.navigate('Students')} style={{ marginTop: 10 }} />
         {isAdmin && (
           <Button title="🙋 Volunteers" variant="outline" onPress={() => navigation.navigate('Volunteers')} style={{ marginTop: 10 }} />

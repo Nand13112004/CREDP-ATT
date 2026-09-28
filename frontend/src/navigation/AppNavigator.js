@@ -12,6 +12,7 @@ import StudentDetailScreen from '../screens/StudentDetailScreen';
 import VolunteersScreen from '../screens/VolunteersScreen';
 import VolunteerFormScreen from '../screens/VolunteerFormScreen';
 import MarkAttendanceScreen from '../screens/MarkAttendanceScreen';
+import MarkVolunteerAttendanceScreen from '../screens/MarkVolunteerAttendanceScreen';
 import ReportsScreen from '../screens/ReportsScreen';
 
 const Stack = createNativeStackNavigator();
@@ -37,6 +38,7 @@ export default function AppNavigator() {
           <>
             <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Dashboard' }} />
             <Stack.Screen name="MarkAttendance" component={MarkAttendanceScreen} options={{ title: 'Mark Attendance' }} />
+            <Stack.Screen name="MarkVolunteerAttendance" component={MarkVolunteerAttendanceScreen} options={{ title: 'Volunteer Attendance' }} />
             <Stack.Screen name="Students" component={StudentsScreen} options={{ title: 'Students' }} />
             <Stack.Screen
               name="StudentForm"
