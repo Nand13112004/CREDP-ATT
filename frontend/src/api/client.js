@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Reads from frontend/.env -> EXPO_PUBLIC_API_URL (baked in at build/start time).
 // Falls back to a placeholder so the error is obvious if it's not set.
-const BASE_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://CHANGE_ME:5000/api').trim().replace(/\s+/g, '');
+const BASE_URL = (process.env.EXPO_PUBLIC_API_URL || 'https://attendance-backend-czs2.onrender.com/api').trim().replace(/\s+/g, '');
 
 export const api = axios.create({
   baseURL: BASE_URL,
