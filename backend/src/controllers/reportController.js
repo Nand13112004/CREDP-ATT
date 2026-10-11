@@ -7,7 +7,13 @@ const { isValidDateString, todayIST } = require('../utils/date');
 // GET /api/reports/daily?date=YYYY-MM-DD&type=students|volunteers
 async function dailyReport(req, res, next) {
   try {
-    const date = req.query.date && isValidDateString(req.query.date) ? req.query.date : todayIST();
+    const rawDate = req.query.date;
+
+    if (rawDate !== undefined && !isValidDateString(rawDate)) {
+      return res.status(400).json({ message: 'date must be a valid YYYY-MM-DD value.' });
+    }
+
+    const date = rawDate && isValidDateString(rawDate) ? rawDate : todayIST();
     const type = req.query.type === 'volunteers' ? 'volunteers' : 'students';
 
     if (type === 'volunteers') {

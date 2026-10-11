@@ -10,10 +10,20 @@ const { isValidDateString, todayIST } = require('../utils/date');
 async function markAttendance(req, res, next) {
   try {
     const { date, records } = req.body;
+
+    if (date !== undefined && !isValidDateString(date)) {
+      return res.status(400).json({ message: 'date must be a valid YYYY-MM-DD value.' });
+    }
+
     const attendanceDate = date && isValidDateString(date) ? date : todayIST();
 
     if (!Array.isArray(records) || records.length === 0) {
       return res.status(400).json({ message: 'records must be a non-empty array of { studentId, status }.' });
+    }
+
+    const hasInvalidRecord = records.some((rec) => !rec || !rec.studentId || !['Present', 'Absent'].includes(rec.status));
+    if (hasInvalidRecord) {
+      return res.status(400).json({ message: 'Each record must include a valid studentId and status of Present or Absent.' });
     }
 
     const markedBy = req.user.role === 'admin' ? 'ADMIN' : req.user.volunteerId;
@@ -21,7 +31,6 @@ async function markAttendance(req, res, next) {
 
     const results = [];
     for (const rec of records) {
-      if (!rec.studentId || !['Present', 'Absent'].includes(rec.status)) continue;
 
       const studentId = rec.studentId.trim().toUpperCase();
       const doc = await Attendance.findOneAndUpdate(
@@ -41,7 +50,13 @@ async function markAttendance(req, res, next) {
 // GET /api/attendance?date=YYYY-MM-DD
 async function getAttendanceByDate(req, res, next) {
   try {
-    const date = req.query.date && isValidDateString(req.query.date) ? req.query.date : todayIST();
+    const rawDate = req.query.date;
+
+    if (rawDate !== undefined && !isValidDateString(rawDate)) {
+      return res.status(400).json({ message: 'date must be a valid YYYY-MM-DD value.' });
+    }
+
+    const date = rawDate && isValidDateString(rawDate) ? rawDate : todayIST();
     const records = await Attendance.find({ date });
     res.json({ date, records });
   } catch (err) {
@@ -104,17 +119,26 @@ async function getStudentAttendance(req, res, next) {
 async function markVolunteerAttendance(req, res, next) {
   try {
     const { date, records } = req.body;
+
+    if (date !== undefined && !isValidDateString(date)) {
+      return res.status(400).json({ message: 'date must be a valid YYYY-MM-DD value.' });
+    }
+
     const attendanceDate = date && isValidDateString(date) ? date : todayIST();
 
     if (!Array.isArray(records) || records.length === 0) {
       return res.status(400).json({ message: 'records must be a non-empty array of { volunteerId, status }.' });
     }
 
+    const hasInvalidRecord = records.some((rec) => !rec || !rec.volunteerId || !['Present', 'Absent'].includes(rec.status));
+    if (hasInvalidRecord) {
+      return res.status(400).json({ message: 'Each record must include a valid volunteerId and status of Present or Absent.' });
+    }
+
     const markedBy = 'ADMIN';
 
     const results = [];
     for (const rec of records) {
-      if (!rec.volunteerId || !['Present', 'Absent'].includes(rec.status)) continue;
 
       const volunteerId = rec.volunteerId.trim().toUpperCase();
       const doc = await VolunteerAttendance.findOneAndUpdate(
