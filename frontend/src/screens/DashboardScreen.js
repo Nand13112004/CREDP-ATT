@@ -7,7 +7,7 @@ import { Card, Button, LoadingState, ErrorState, colors } from '../components/UI
 import { todayISO, formatDateLong } from '../utils/date';
 
 export default function DashboardScreen({ navigation }) {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -94,7 +94,6 @@ export default function DashboardScreen({ navigation }) {
           <Button title="🙋 Volunteers" variant="outline" onPress={() => navigation.navigate('Volunteers')} style={{ marginTop: 10 }} />
         )}
         <Button title="📊 Reports" variant="outline" onPress={() => navigation.navigate('Reports')} style={{ marginTop: 10 }} />
-        <Button title="🚪 Logout" variant="danger" onPress={logout} style={{ marginTop: 20 }} />
       </View>
     </ScrollView>
   );

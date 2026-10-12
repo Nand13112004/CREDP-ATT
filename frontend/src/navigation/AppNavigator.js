@@ -1,4 +1,5 @@
 import React from 'react';
+import { Pressable, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
@@ -25,13 +26,29 @@ const screenOptions = {
 };
 
 export default function AppNavigator() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   if (loading) return <LoadingState message="Loading..." />;
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={screenOptions}>
+      <Stack.Navigator
+        screenOptions={{
+          ...screenOptions,
+          headerRight: user
+            ? () => (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Log out"
+                  onPress={logout}
+                  hitSlop={8}
+                >
+                  <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Logout</Text>
+                </Pressable>
+              )
+            : undefined,
+        }}
+      >
         {!user ? (
           <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Sign In', headerShown: false }} />
         ) : (
