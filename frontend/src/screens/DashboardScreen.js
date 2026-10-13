@@ -94,6 +94,9 @@ export default function DashboardScreen({ navigation }) {
           <Button title="🙋 Volunteers" variant="outline" onPress={() => navigation.navigate('Volunteers')} style={{ marginTop: 10 }} />
         )}
         <Button title="📊 Reports" variant="outline" onPress={() => navigation.navigate('Reports')} style={{ marginTop: 10 }} />
+        {isAdmin && (
+          <Button title="📥 Export Data" variant="outline" onPress={() => navigation.navigate('Export')} style={{ marginTop: 10 }} />
+        )}
       </View>
     </ScrollView>
   );

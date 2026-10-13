@@ -3,7 +3,7 @@
 A full-stack mobile attendance system: **React Native (Expo, runs in Expo Go)** frontend +
 **Node.js/Express/MongoDB Atlas** backend, deployable to **Render**.
 
-- Admin (env-based login) manages students & volunteers, marks/edits attendance, views reports.
+- Admin (env-based login) manages students & volunteers, marks/edits attendance, views reports, and exports date-range attendance workbooks.
 - Volunteers (created by Admin) mark attendance and view reports.
 - Attendance is date-wise, one record per student per day (enforced by a unique DB index),
   calculated in the **Asia/Kolkata** timezone.
@@ -34,7 +34,7 @@ attendance-app/
       context/AuthContext.js
       navigation/AppNavigator.js
       screens/              (Login, Dashboard, Students, StudentForm, StudentDetail,
-                              Volunteers, VolunteerForm, MarkAttendance, Reports)
+                              Volunteers, VolunteerForm, MarkAttendance, Reports, Export)
       utils/date.js
     App.js
     app.json
@@ -53,8 +53,8 @@ its own; the frontend runs through Expo Go on its own.
 
 ## 2. Technology Stack
 
-**Frontend:** React Native, Expo SDK 57, React Navigation (native-stack), Axios, AsyncStorage.
-**Backend:** Node.js, Express, Mongoose, MongoDB Atlas, JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`.
+**Frontend:** React Native, Expo SDK 57, React Navigation (native-stack), Axios, AsyncStorage, Expo FileSystem and Sharing.
+**Backend:** Node.js, Express, Mongoose, MongoDB Atlas, ExcelJS, JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`.
 
 ---
 
@@ -161,6 +161,7 @@ If you change `.env`, restart `npx expo start` (env vars are read at startup).
 3. **Students → + Add Student** — add a few students (Student ID + Name required).
 4. **Mark Attendance** — search, tap P/A per student (or "Mark All Present"), then **Save Attendance**. Admins can enter an earlier `YYYY-MM-DD` date and load it to record or correct past attendance; volunteers can only record attendance for today.
 5. **Reports** — see today's totals, tap a student to view their individual history.
+6. **Export Data** (Admin only) — choose a start and end date to download an Excel workbook with a daily summary and separate student and volunteer attendance detail sheets.
 
 ---
 
@@ -215,6 +216,7 @@ All routes are prefixed `/api`. Protected routes require `Authorization: Bearer 
 | PUT | `/attendance/:id` | Auth | Update a single record; only Admin may edit a past date |
 | GET | `/attendance/student/:studentId` | Auth | Full history + stats for one student |
 | GET | `/reports/daily?date=YYYY-MM-DD` | Auth | Daily totals + per-student status |
+| GET | `/reports/export?from=YYYY-MM-DD&to=YYYY-MM-DD` | Admin | Formatted Excel workbook for the date range |
 
 ---
 

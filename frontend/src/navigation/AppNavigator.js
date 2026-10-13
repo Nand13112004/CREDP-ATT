@@ -15,6 +15,7 @@ import VolunteerFormScreen from '../screens/VolunteerFormScreen';
 import MarkAttendanceScreen from '../screens/MarkAttendanceScreen';
 import MarkVolunteerAttendanceScreen from '../screens/MarkVolunteerAttendanceScreen';
 import ReportsScreen from '../screens/ReportsScreen';
+import ExportScreen from '../screens/ExportScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -74,6 +75,9 @@ export default function AppNavigator() {
               options={({ route }) => ({ title: route.params?.volunteer ? 'Edit Volunteer' : 'Add Volunteer' })}
             />
             <Stack.Screen name="Reports" component={ReportsScreen} options={{ title: 'Reports' }} />
+            {user.role === 'admin' && (
+              <Stack.Screen name="Export" component={ExportScreen} options={{ title: 'Export Data' }} />
+            )}
           </>
         )}
       </Stack.Navigator>
