@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Alert } 
 import { useFocusEffect } from '@react-navigation/native';
 import api, { getErrorMessage } from '../api/client';
 import { Button, LoadingState, ErrorState, EmptyState, colors } from '../components/UI';
-import { todayISO, formatDateLong } from '../utils/date';
+import { useAuth } from '../context/AuthContext';
+import { todayISO, isValidDateString, formatDateLong } from '../utils/date';
 
 // Memoized row component to avoid re-rendering entire list on each status click
 const StudentRow = memo(function StudentRow({ item, status, onToggle, disabled }) {
@@ -43,7 +44,9 @@ export default function MarkAttendanceScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const savingRef = useRef(false);
-  const date = todayISO();
+  const { isAdmin } = useAuth();
+  const [date, setDate] = useState(todayISO);
+  const [dateInput, setDateInput] = useState(date);
 
   const loadData = useCallback(async () => {
     try {
@@ -96,6 +99,14 @@ export default function MarkAttendanceScreen() {
     setStatusMap({});
   }
 
+  function loadSelectedDate() {
+    if (!isValidDateString(dateInput) || dateInput > todayISO()) {
+      Alert.alert('Invalid date', 'Enter a valid date in YYYY-MM-DD format that is today or earlier.');
+      return;
+    }
+    setDate(dateInput);
+  }
+
   async function saveAttendance() {
     if (savingRef.current || saving) return;
 
@@ -129,6 +140,20 @@ export default function MarkAttendanceScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Student Attendance</Text>
         <Text style={styles.date}>{formatDateLong(date)}</Text>
+        {isAdmin && (
+          <View style={styles.dateSelector}>
+            <TextInput
+              style={[styles.searchInput, styles.dateInput]}
+              placeholder="YYYY-MM-DD"
+              value={dateInput}
+              onChangeText={setDateInput}
+              keyboardType="numbers-and-punctuation"
+              maxLength={10}
+              autoCapitalize="none"
+            />
+            <Button title="Load Date" onPress={loadSelectedDate} style={styles.loadDateButton} />
+          </View>
+        )}
         <TextInput
           style={styles.searchInput}
           placeholder="Search student..."
@@ -183,6 +208,9 @@ const styles = StyleSheet.create({
   header: { padding: 16, paddingBottom: 8 },
   title: { fontSize: 20, fontWeight: '800', color: colors.text },
   date: { fontSize: 14, color: colors.textMuted, marginTop: 2, marginBottom: 12 },
+  dateSelector: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  dateInput: { flex: 1 },
+  loadDateButton: { minWidth: 105 },
   searchInput: {
     backgroundColor: colors.card,
     borderRadius: 10,

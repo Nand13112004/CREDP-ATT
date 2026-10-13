@@ -7,6 +7,11 @@ function todayIST() {
     .toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // en-CA gives YYYY-MM-DD
 }
 
+/** Compares YYYY-MM-DD calendar dates without timezone conversion. */
+function isFutureDateString(date) {
+  return date > todayIST();
+}
+
 /** Basic validation for a YYYY-MM-DD date string. */
 function isValidDateString(str) {
   if (typeof str !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(str)) return false;
@@ -22,4 +27,4 @@ function isValidDateString(str) {
   );
 }
 
-module.exports = { todayIST, isValidDateString };
+module.exports = { todayIST, isValidDateString, isFutureDateString };

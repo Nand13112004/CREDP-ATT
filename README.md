@@ -159,7 +159,7 @@ If you change `.env`, restart `npx expo start` (env vars are read at startup).
 1. Login as Admin.
 2. **Volunteers → + Add Volunteer** — create at least one volunteer account.
 3. **Students → + Add Student** — add a few students (Student ID + Name required).
-4. **Mark Attendance** — search, tap P/A per student (or "Mark All Present"), then **Save Attendance**.
+4. **Mark Attendance** — search, tap P/A per student (or "Mark All Present"), then **Save Attendance**. Admins can enter an earlier `YYYY-MM-DD` date and load it to record or correct past attendance; volunteers can only record attendance for today.
 5. **Reports** — see today's totals, tap a student to view their individual history.
 
 ---
@@ -210,9 +210,9 @@ All routes are prefixed `/api`. Protected routes require `Authorization: Bearer 
 | POST | `/volunteers` | Admin | Create volunteer |
 | PUT | `/volunteers/:id` | Admin | Update volunteer |
 | DELETE | `/volunteers/:id` | Admin | Delete volunteer |
-| POST | `/attendance` | Auth | `{ date, records:[{studentId,status}] }` — upserts |
+| POST | `/attendance` | Auth | `{ date, records:[{studentId,status}] }` — upserts; only Admin may use a past date |
 | GET | `/attendance?date=YYYY-MM-DD` | Auth | Attendance for one date |
-| PUT | `/attendance/:id` | Auth | Update a single record |
+| PUT | `/attendance/:id` | Auth | Update a single record; only Admin may edit a past date |
 | GET | `/attendance/student/:studentId` | Auth | Full history + stats for one student |
 | GET | `/reports/daily?date=YYYY-MM-DD` | Auth | Daily totals + per-student status |
 

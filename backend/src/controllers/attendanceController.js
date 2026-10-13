@@ -2,7 +2,7 @@ const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
 const VolunteerAttendance = require('../models/VolunteerAttendance');
 const Volunteer = require('../models/Volunteer');
-const { isValidDateString, todayIST } = require('../utils/date');
+const { isValidDateString, isFutureDateString, todayIST } = require('../utils/date');
 
 // POST /api/attendance
 // Body: { date, records: [{ studentId, status }] }
@@ -16,6 +16,12 @@ async function markAttendance(req, res, next) {
     }
 
     const attendanceDate = date && isValidDateString(date) ? date : todayIST();
+    if (isFutureDateString(attendanceDate)) {
+      return res.status(400).json({ message: 'Attendance cannot be recorded for a future date.' });
+    }
+    if (attendanceDate < todayIST() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admin can record attendance for a previous date.' });
+    }
 
     if (!Array.isArray(records) || records.length === 0) {
       return res.status(400).json({ message: 'records must be a non-empty array of { studentId, status }.' });
@@ -75,13 +81,16 @@ async function updateAttendance(req, res, next) {
     const markedBy = req.user.role === 'admin' ? 'ADMIN' : req.user.volunteerId;
     const markedByRole = req.user.role;
 
-    const record = await Attendance.findByIdAndUpdate(
-      req.params.id,
-      { status, markedBy, markedByRole },
-      { new: true, runValidators: true }
-    );
-
+    const record = await Attendance.findById(req.params.id);
     if (!record) return res.status(404).json({ message: 'Attendance record not found.' });
+    if (record.date < todayIST() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admin can edit attendance for a previous date.' });
+    }
+
+    record.status = status;
+    record.markedBy = markedBy;
+    record.markedByRole = markedByRole;
+    await record.save();
     res.json(record);
   } catch (err) {
     next(err);
@@ -125,6 +134,9 @@ async function markVolunteerAttendance(req, res, next) {
     }
 
     const attendanceDate = date && isValidDateString(date) ? date : todayIST();
+    if (isFutureDateString(attendanceDate)) {
+      return res.status(400).json({ message: 'Attendance cannot be recorded for a future date.' });
+    }
 
     if (!Array.isArray(records) || records.length === 0) {
       return res.status(400).json({ message: 'records must be a non-empty array of { volunteerId, status }.' });
@@ -158,7 +170,12 @@ async function markVolunteerAttendance(req, res, next) {
 // GET /api/attendance/volunteers?date=YYYY-MM-DD
 async function getVolunteerAttendanceByDate(req, res, next) {
   try {
-    const date = req.query.date && isValidDateString(req.query.date) ? req.query.date : todayIST();
+    const rawDate = req.query.date;
+    if (rawDate !== undefined && !isValidDateString(rawDate)) {
+      return res.status(400).json({ message: 'date must be a valid YYYY-MM-DD value.' });
+    }
+
+    const date = rawDate || todayIST();
     const records = await VolunteerAttendance.find({ date });
     res.json({ date, records });
   } catch (err) {
